@@ -7,7 +7,7 @@ const pool = require('./db'); // Import the PostgreSQL connection pool
 require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { google } = require('googleapis');
-const { auth } =require('./auth'); // Add this for authentication
+const { autho } =require('./auth'); // Add this for authentication
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,9 +15,9 @@ const port = process.env.PORT || 3000;
 app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
 
-const auth = new GoogleAuth({
-  scopes: 'https://www.googleapis.com/auth/cloud-platform',
-});
+// const auth = new GoogleAuth({
+//   scopes: 'https://www.googleapis.com/auth/cloud-platform',
+// });
 
 app.post('/translate', async (req, res) => {
   const { language, message, model } = req.body;
@@ -34,7 +34,7 @@ app.post('/translate', async (req, res) => {
     const models = genAI.getGenerativeModel({ model: model });
 
     // Acquire an auth client, and authorize the client
-    const client = await auth.getClient();
+    const client = await autho.getClient();
     // Obtain an authenticated token
     const accessToken = await client.getAccessToken();
 
