@@ -3,8 +3,11 @@ const axios = require('axios');
 const bodyParser = require('body-parser');
 const cors = require('cors'); // Import cors
 const pool = require('./db'); // Import the PostgreSQL connection pool
+// const { GoogleAuth } = require('google-auth-library');
 require('dotenv').config();
-const { TextServiceClient } = require('@google/generative-ai');  // Import Google Gemini Client
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { google } = require('googleapis');
+const { auth } =require('./auth'); // Add this for authentication
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,7 +15,9 @@ const port = process.env.PORT || 3000;
 app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
 
-
+const auth = new GoogleAuth({
+  scopes: 'https://www.googleapis.com/auth/cloud-platform',
+});
 
 app.post('/translate', async (req, res) => {
   const { language, message, model } = req.body;
@@ -24,10 +29,20 @@ app.post('/translate', async (req, res) => {
   try {
     let translatedText;
 
-    if (model.startsWith('google-gemini')) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const models = genAI.getGenerativeModel({ model: model });
+
+    // Acquire an auth client, and authorize the client
+    const client = await auth.getClient();
+    // Obtain an authenticated token
+    const accessToken = await client.getAccessToken();
+
+    if (model.startsWith('gemini')) {
+      
       // Translate using Google Gemini by making a direct API request
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta2/models/${model}:generateText`,
+        `https://generativelanguage.googleapis.com/v1beta2/models/${models}:generateText`,
         {
           prompt: {
             text: message,
@@ -36,7 +51,7 @@ app.post('/translate', async (req, res) => {
         },
         {
           headers: {
-            'Authorization': `Bearer ${process.env.VITE_GEMINI_KEY}`,
+            Authorization: `Bearer ${accessToken.token}`,
             'Content-Type': 'application/json',
           },
         }
