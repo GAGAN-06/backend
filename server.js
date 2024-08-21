@@ -7,7 +7,7 @@ const pool = require('./db'); // Import the PostgreSQL connection pool
 require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { google } = require('googleapis');
-const { autho } =require('./auth'); // Add this for authentication
+const { autho } = require('./auth'); // Add this for authentication
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 //   scopes: 'https://www.googleapis.com/auth/cloud-platform',
 // });
 
-app.post('/translate', async (req, res) => {
+app.post('/t', async (req, res) => {
   const { language, message, model } = req.body;
 
   if (!process.env.OPENAI_API_KEY && !process.env.GOOGLE_GEMINI_API_KEY) {
@@ -29,35 +29,25 @@ app.post('/translate', async (req, res) => {
   try {
     let translatedText;
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const models = genAI.getGenerativeModel({ model: model });
-
-    // Acquire an auth client, and authorize the client
-    const client = await autho.getClient();
-    // Obtain an authenticated token
-    const accessToken = await client.getAccessToken();
-
     if (model.startsWith('gemini')) {
-      
-      // Translate using Google Gemini by making a direct API request
-      const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta2/models/${models}:generateText`,
-        {
-          prompt: {
-            text: message,
-            language: language, // You may need to adjust based on the actual API requirements
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken.token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // Integrate Gemini translation with waiting mechanism
 
-      translatedText = response.data.candidates[0].output.trim();
+      const apiKey = "AIzaSyAl-MSGB6VSUw3xpFauNrTm7MA_HFqCMWw"; // Replace with your Gemini API key
+      const genAI = new GoogleGenerativeAI(apiKey);
+
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash" // Choose a suitable Gemini model
+      });
+
+      async function translateText(text, targetLanguage) {
+        const prompt = `Translate the following text from English to ${targetLanguage}: ${text}`;
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+      }
+
+
+      const result = translateText(message, language)
+      translatedText = result.data.content.trim();
     } else {
       // Translate using OpenAI
       const response = await axios.post(
@@ -90,14 +80,15 @@ app.post('/translate', async (req, res) => {
       translatedText = response.data.choices[0].message.content.trim(); // Extracting the translated text from OpenAI response
     }
 
-    // Save the translation result to the database
-    await pool.query(
-      'INSERT INTO translations (language, message, translated_text) VALUES ($1, $2, $3)',
-      [language, message, translatedText]
-    );
+    // // Save the translation result to the database
+    // await pool.query(
+    //   'INSERT INTO translations (language, message, translated_text) VALUES ($1, $2, $3)',
+    //   [language, message, translatedText]
+    // );
 
 
     res.json({ translatedText });
+    translatedText = text.data.content.trim();
   } catch (error) {
     if (error.response) {
       res.status(error.response.status).json({ error: error.response.data });
