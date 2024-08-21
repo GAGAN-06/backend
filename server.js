@@ -19,10 +19,10 @@ app.use(bodyParser.json());
 //   scopes: 'https://www.googleapis.com/auth/cloud-platform',
 // });
 
-app.post('/t', async (req, res) => {
+app.post('/translate', async (req, res) => {
   const { language, message, model } = req.body;
 
-  if (!process.env.OPENAI_API_KEY && !process.env.GOOGLE_GEMINI_API_KEY) {
+  if (!process.env.OPENAI_API_KEY && !process.env.VITE_GEMINI_KEY) {
     return res.status(500).json({ error: "API keys are missing. Please set the OPENAI_API_KEY and GOOGLE_GEMINI_API_KEY environment variables." });
   }
 
@@ -47,7 +47,7 @@ app.post('/t', async (req, res) => {
 
 
       const result = translateText(message, language)
-      translatedText = result.data.content.trim();
+      translatedText = response.data.choices[0].message.content.trim()
     } else {
       // Translate using OpenAI
       const response = await axios.post(
