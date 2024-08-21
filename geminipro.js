@@ -7,7 +7,7 @@ const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash" // Choose a suitable Gemini model
 });
 
-async function translateText(text, targetLanguage) {
+async function translationText(text, targetLanguage) {
   const prompt = `Translate the following text from English to ${targetLanguage}: ${text}`;
   const result = await model.generateContent(prompt);
   return result.response.text();
@@ -15,10 +15,13 @@ async function translateText(text, targetLanguage) {
 
 // Example usage within the same file
 async function main() {
-  const translatedText = await translateText('Hello, world!', 'fr');
-  console.log('Translated text:', translatedText);
+  const translateText = await translation
+Text('Hello, world!', 'fr');
+  console.log('Translated text:', translateText);
 }
 
 main().catch(error => {
   console.error('Error:', error);
 });
+
+module.exports =  {translationText};

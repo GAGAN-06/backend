@@ -7,7 +7,7 @@ const pool = require('./db'); // Import the PostgreSQL connection pool
 require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { google } = require('googleapis');
-const { autho } = require('./auth'); // Add this for authentication
+const {translationText} = require('./geminipro')
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,15 +39,10 @@ app.post('/translate', async (req, res) => {
         model: "gemini-1.5-flash" // Choose a suitable Gemini model
       });
 
-      async function translateText(text, targetLanguage) {
-        const prompt = `Translate the following text from English to ${targetLanguage}: ${text}`;
-        const result = await model.generateContent(prompt);
-        return result.response.text();
-      }
+      translationText(message,language)
 
-
-      const result = translateText(message, language)
-      translatedText = response.data.choices[0].message.content.trim()
+      const result = translationText(message, language)
+      translatedText = result.data.choices[0].message.content.trim()
     } else {
       // Translate using OpenAI
       const response = await axios.post(
