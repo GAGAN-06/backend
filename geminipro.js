@@ -15,8 +15,7 @@ async function translationText(text, targetLanguage) {
 
 // Example usage within the same file
 async function main() {
-  const translateText = await translation
-Text('Hello, world!', 'fr');
+  const translateText = await translationText('Hello, world!', 'fr');
   console.log('Translated text:', translateText);
 }
 
