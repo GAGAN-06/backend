@@ -88,11 +88,11 @@ app.post('/translate', async (req, res) => {
       translatedText = response.data.choices[0].message.content.trim(); // Extracting the translated text from OpenAI response
     }
 
-    // Save the translation result to the database
-    await pool.query(
-      'INSERT INTO translations (language, message, translated_text) VALUES ($1, $2, $3)',
-      [language, message, translatedText]
-    );
+    // // Save the translation result to the database
+    // await pool.query(
+    //   'INSERT INTO translations (language, message, translated_text) VALUES ($1, $2, $3)',
+    //   [language, message, translatedText]
+    // );
 
 
     res.json({ translatedText });
