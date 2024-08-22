@@ -11,6 +11,8 @@ const port = process.env.PORT || 5000;
 app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
 
+const deeplApiKey = process.env.DEEPL_API_KEY; // DeepL API key
+
 // google gemini code
 const apiKey = process.env.VITE_GEMINI_KEY; // Replace with your Gemini API key
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -28,7 +30,7 @@ function getGenerativeModel(modelName) {
 }
 
 async function translationText(text, targetLanguage, modelName) {
-  const prompt = `You are a translator app, so translate the following text accordingly from English to ${targetLanguage}: ${text}`;
+  const prompt = `You are a translator app, so NO LONG PARAGRAPHS,if there is no specific translation just give one of the most accurate,translate the following text accordingly from English to ${targetLanguage}: ${text}`;
   const model = getGenerativeModel(modelName);
 
   try {
@@ -40,11 +42,30 @@ async function translationText(text, targetLanguage, modelName) {
   }
 }
 
+//code for deepl translation
+async function translationTextDeepL(text, targetLanguage) {
+  const url = 'https://api.deepl.com/v2/translate';
+  try {
+    const response = await axios.post(url, null, {
+      params: {
+        auth_key: deeplApiKey,
+        text: text,
+        target_lang: targetLanguage.toUpperCase(),
+      }
+    });
+    return response.data.translations[0].text;
+  } catch (error) {
+    console.error('Error in translationTextDeepL:', error);
+    throw error;
+  }
+}
+
+
 app.post('/translate', async (req, res) => {
-  
+
   const { language, message, model } = req.body;
 
-  if (!process.env.OPENAI_API_KEY && !process.env.VITE_GEMINI_KEY) {
+  if (!process.env.OPENAI_API_KEY && !process.env.VITE_GEMINI_KEY && !process.env.VITE_DEEPL_KEY ) {
     return res.status(500).json({ error: "API keys are missing. Please set the OPENAI_API_KEY and GOOGLE_GEMINI_API_KEY environment variables." });
   }
 
@@ -52,12 +73,16 @@ app.post('/translate', async (req, res) => {
     let translatedText;
     // calling gemini function here
     if (model.startsWith('gemini')) {
-      console.log('Calling Gemini API...');
       translatedText = await translationText(message, language, model); // Await the result
-      console.log('Gemini API response:', translatedText);
+    }
 
-    } else {
-      // Translate using OpenAI
+     // calling deepl function here
+    else if (model.startsWith('deepl')) {
+      translatedText = await translationTextDeepL(message, language);
+    }
+    
+    // Translate using OpenAI
+    else {
       const response = await axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
