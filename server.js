@@ -7,11 +7,12 @@ require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const port = process.env.PORT || 5000;
+import * as deepl from 'node_modules/deepl-node';
 
 app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
 
-const deeplApiKey = process.env.DEEPL_API_KEY; // DeepL API key
+const deeplApiKey = process.env.VITE_DEEPL_KEY; // DeepL API key
 
 // google gemini code
 const apiKey = process.env.VITE_GEMINI_KEY; // Replace with your Gemini API key
@@ -43,23 +44,16 @@ async function translationText(text, targetLanguage, modelName) {
 }
 
 //code for deepl translation
+const translator = new deepl.Translator(deeplApiKey)
 async function translationTextDeepL(text, targetLanguage) {
-  const url = 'https://api.deepl.com/v2/translate';
   try {
-    const response = await axios.post(url, null, {
-      params: {
-        auth_key: deeplApiKey,
-        text: text,
-        target_lang: targetLanguage.toUpperCase(),
-      }
-    });
-    return response.data.translations[0].text;
+    const result = await translator.translateText(text, null, targetLanguage.toUpperCase());
+    return result.text;
   } catch (error) {
-    console.error('Error in translationTextDeepL:', error);
-    throw error;
+    console.error('Error in translationTextDeepL:', error.message || error);
+    throw new Error('Translation failed. Please try again later.');
   }
 }
-
 
 app.post('/translate', async (req, res) => {
 
