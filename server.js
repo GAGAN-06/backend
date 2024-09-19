@@ -7,7 +7,8 @@ require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const port = process.env.PORT || 5000;
-import * as deepl from 'node_modules/deepl-node';
+// import * as deepl from 'node_modules/deepl-node';
+const deepl = require("deepl-node");
 
 app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
