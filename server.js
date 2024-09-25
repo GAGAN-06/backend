@@ -7,8 +7,8 @@ require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const port = process.env.PORT || 5000;
-// import * as deepl from 'node_modules/deepl-node';
 const deepl = require("deepl-node");
+const languageNames = require("./languages")
 
 app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
@@ -111,7 +111,7 @@ app.post('/translate', async (req, res) => {
     // Save the translation result to the database
     await pool.query(
       'INSERT INTO translations (language, message, translated_text) VALUES ($1, $2, $3)',
-      [language, message, translatedText]
+      [languageNames[language], message, translatedText]
     );
 
 
