@@ -114,7 +114,7 @@ app.post('/translate', async (req, res) => {
 
     // Save the translation result to the database
     await pool.query(
-      'INSERT INTO translations (language, message, translated_text) VALUES ($1, $2, $3, $4)',
+      'INSERT INTO translations (language, message, translated_text,model) VALUES ($1, $2, $3, $4)',
       [languageNames[language], message, translatedText,model]
     );
 
