@@ -129,6 +129,88 @@ app.post('/translate', async (req, res) => {
   }
 });
 
+app.post('/rate', async (req, res) => {
+  const { language, message } = req.body;
+
+  try {
+    // Translate using Gemini
+    const geminiTranslation = await translationText(message, language, 'gemini-1.5-flash');
+    
+    // Translate using DeepL
+    const deeplTranslation = await translationTextDeepL(message, language);
+
+    // Translate using OpenAI
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: `You are a translator that translates text into ${language}` },
+          { role: "user", content: message },
+        ],
+        temperature: 0.3,
+        max_tokens: 100,
+        top_p: 1.0,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    const openaiTranslation = response.data.choices[0].message.content.trim();
+
+    // Ask ChatGPT to rate translations
+    const ratingPrompt = `
+      Rate the following translations on a scale of 1 to 10 for accuracy, tone, and clarity:
+      1. Gemini translation: ${geminiTranslation}
+      2. DeepL translation: ${deeplTranslation}
+      3. OpenAI translation: ${openaiTranslation}
+    `;
+
+    const ratingResponse = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: "You are a language model expert." },
+          { role: "user", content: ratingPrompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 100,
+        top_p: 1.0,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const rating = ratingResponse.data.choices[0].message.content.trim();
+
+    res.json({
+      geminiTranslation,
+      deeplTranslation,
+      openaiTranslation,
+      rating,
+    });
+
+  } catch (error) {
+    console.error('Error in /translate-and-rate:', error);
+    res.status(500).json({ error: 'An error occurred while processing the translations.' });
+  }
+});
+
+
+
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
