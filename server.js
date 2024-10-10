@@ -25,6 +25,10 @@ function getGenerativeModel(modelName) {
       return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     case 'gemini-1.5-pro':
       return genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    case 'gemini-1.5-flash-002':
+      return genAI.getGenerativeModel({ model: 'gemini-1.5-flash-002' });
+    case 'gemini-1.5-pro-002':
+      return genAI.getGenerativeModel({ model: 'gemini-1.5-pro-002' });
     // Add other models as needed
     default:
       throw new Error('Unsupported model');
