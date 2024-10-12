@@ -163,37 +163,25 @@ app.post('/rate', async (req, res) => {
     );
     const openaiTranslation = response.data.choices[0].message.content.trim();
 
-    // Ask ChatGPT to rate translations
-    const ratingPrompt = `
-      Rate the following translations on a scale of 1 to 10 for accuracy, tone, and clarity:
-      1. Gemini translation: ${geminiTranslation}
-      2. DeepL translation: ${deeplTranslation}
-      3. OpenAI translation: ${openaiTranslation}
-    `;
-
-    const ratingResponse = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: "gpt-4",
-        messages: [
-          { role: "system", content: "You are a language model expert." },
-          { role: "user", content: ratingPrompt },
-        ],
-        temperature: 0.3,
-        max_tokens: 100,
-        top_p: 1.0,
-        frequency_penalty: 0.0,
-        presence_penalty: 0.0,
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
+    async function rateTranslations(geminiTranslation, deeplTranslation) {
+      const prompt = `
+        Rate the following translations on a scale of 1 to 10 for accuracy, tone, and clarity:
+        1. Gemini translation: ${geminiTranslation}
+        2. DeepL translation: ${deeplTranslation}
+      `;
+      const model = getGenerativeModel('gemini-1.5-flash'); // Use appropriate Gemini model
+    
+      try {
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+      } catch (error) {
+        console.error('Error in rateTranslations:', error);
+        throw error;
       }
-    );
+    }
+    
 
-    const rating = ratingResponse.data.choices[0].message.content.trim();
+    const rating = rateTranslations.data.choices[0].message.content.trim();
 
     res.json({
       geminiTranslation,
