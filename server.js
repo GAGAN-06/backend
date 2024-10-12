@@ -139,35 +139,36 @@ app.post('/rate', async (req, res) => {
     // Translate using DeepL
     const deeplTranslation = await translationTextDeepL(message, language);
 
-    // Translate using OpenAI
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: `You are a translator that translates text into ${language}` },
-          { role: "user", content: message },
-        ],
-        temperature: 0.3,
-        max_tokens: 100,
-        top_p: 1.0,
-        frequency_penalty: 0.0,
-        presence_penalty: 0.0,
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    const openaiTranslation = response.data.choices[0].message.content.trim();
+    // // Translate using OpenAI
+    // const response = await axios.post(
+    //   'https://api.openai.com/v1/chat/completions',
+    //   {
+    //     model: "gpt-3.5-turbo",
+    //     messages: [
+    //       { role: "system", content: `You are a translator that translates text into ${language}` },
+    //       { role: "user", content: message },
+    //     ],
+    //     temperature: 0.3,
+    //     max_tokens: 100,
+    //     top_p: 1.0,
+    //     frequency_penalty: 0.0,
+    //     presence_penalty: 0.0,
+    //   },
+    //   {
+    //     headers: {
+    //       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+    //       'Content-Type': 'application/json'
+    //     }
+    //   }
+    // );
+    // const openaiTranslation = response.data.choices[0].message.content.trim();
 
     async function rateTranslations(geminiTranslation, deeplTranslation) {
       const prompt = `
         Rate the following translations on a scale of 1 to 10 for accuracy, tone, and clarity:
         1. Gemini translation: ${geminiTranslation}
         2. DeepL translation: ${deeplTranslation}
+        rate them like gemini: 9/10 and all in different line and also no big paras or explanation.
       `;
       const model = getGenerativeModel('gemini-1.5-flash'); // Use appropriate Gemini model
     
@@ -181,12 +182,12 @@ app.post('/rate', async (req, res) => {
     }
     
 
-    const rating = rateTranslations.data.choices[0].message.content.trim();
+    const rating = await rateTranslations(geminiTranslation, deeplTranslation,);
 
     res.json({
       geminiTranslation,
       deeplTranslation,
-      openaiTranslation,
+      // openaiTranslation,
       rating,
     });
 
