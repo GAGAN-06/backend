@@ -3,10 +3,10 @@ require('dotenv').config();
 
 // PostgreSQL connection pool
 const pool = new Pool({
-    user: 'translations_k6sd_user', // replace with your PostgreSQL username
-    host: 'dpg-crpfjq68ii6s73ch7ph0-a',
-    database: 'translations_k6sd', // replace with your database name
-    password: "kivIR4XmdCuYEdlqHnyMbzhtQ3aOhcum", // replace with your PostgreSQL password
+    user: 'tranlsations_user', // replace with your PostgreSQL username
+    host: 'dpg-csf575ggph6c73evvsn0-a',
+    database: 'tranlsations', // replace with your database name
+    password: "4tppv6m9mjsJNlkyTuV6bkUEyPPE90rg", // replace with your PostgreSQL password
     port: 5432,
 });
 module.exports = pool;
